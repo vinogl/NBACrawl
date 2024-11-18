@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def resolve_score_table(soup_table) -> dict:
+def resolve_score_table(soup_table) -> list:
     t_all = soup_table.find('tbody').find_all('tr')  # 获取表格的所有的行
 
     # 获取OT列的索引
@@ -15,22 +15,14 @@ def resolve_score_table(soup_table) -> dict:
     guest_scores = [int(cell.text) for cell in t_all[2].find_all('td')]
 
     # 提取每节得分
-    home_quarter = {f'home_{i + 1}': home_scores[index] for i, index in enumerate(c_quarter)}
-    guest_quarter = {f'guest_{i + 1}': guest_scores[index] for i, index in enumerate(c_quarter)}
+    home_quarter = [home_scores[index] for index in c_quarter]
+    guest_quarter = [guest_scores[index] for index in c_quarter]
 
     # 提取加时赛得分
     home_ot = sum(home_scores[i] for i in c_ot)
     guest_ot = sum(guest_scores[i] for i in c_ot)
 
-    # 存储数据到指定字段
-    score_dict = {
-        **home_quarter,
-        **guest_quarter,
-        'home_ot': home_ot,
-        'guest_ot': guest_ot
-    }
-
-    return score_dict
+    return [*home_quarter, home_ot, *guest_quarter, guest_ot]
 
 
 def resolve_odds_table(soup_table) -> dict:
@@ -40,8 +32,10 @@ def resolve_odds_table(soup_table) -> dict:
         tr_a = tr.find('a', title='指数走势')
         if tr_a:
             trend_co = tr.find_all('td')[0].text.strip()
-            trend_url = tr_a.get('href')
-            url_dict.update({trend_co: trend_url})
+            if trend_co:
+                trend_index = tr_a.get('href').split('?')[1]
+                temp_dict = {"ZF": "/odds/OverDownChart.aspx?%s" % trend_index, "RF": "/odds/handicap.aspx?%s" % trend_index}
+                url_dict[trend_co] = temp_dict
 
     return url_dict
 
@@ -63,18 +57,21 @@ def get_trend(trend_route: str) -> list:
 
         # 提取表格中的所有行
         trend_all = trend_table.find_all('tr')
-        trend_key = [cell.get_text() for cell in trend_all[0].find_all('td')]
         trend_list = []
 
         for row in trend_all[1:]:
-            row_data = {trend_key[k]: cell.get_text() for k, cell in enumerate(row.find_all('td'))}
-            trend_list.append(row_data)
+            row_data = [cell.get_text() for cell in row.find_all('td')]
+            if "走地" not in row_data[-1]:
+                row_info = row_data[-1].split()
+                row_data.pop()
+                row_data.append(row_info[0])
+                row_data.append(row_info[1])
+                trend_list.append(row_data)
 
         return trend_list
 
 
 def get_data(game_id: int) -> dict:
-    game_data = {"id": game_id, "trend": {}}
 
     url = 'https://nba.titan007.com/odds/OverDown_n.aspx?id=%d&l=0' % game_id
 
@@ -88,18 +85,32 @@ def get_data(game_id: int) -> dict:
         html_content = response.text
         soup = BeautifulSoup(html_content, 'html.parser')
 
-        game_data["home_name"] = soup.find('div', class_='home').find('img')['alt']
-        game_data["guest_name"] = soup.find('div', class_='guest').find('img')['alt']
-        game_data["game_time"] = soup.find('div', class_='vs').find_all('div')[0].text.strip().replace("NBA", "")
+        _home = soup.find('div', class_='home').find('img')['alt']
+        _guest = soup.find('div', class_='guest').find('img')['alt']
+
+        time_info = soup.find('div', class_='vs').find_all('div')[0].text.strip().split()
+        _date = time_info[1]
+        _time = time_info[2]
+        _weekday = time_info[3]
 
         score_table = soup.find('span', id='scoreData').find('table')
-        game_data["score_info"] = resolve_score_table(score_table)
+        _score_list = resolve_score_table(score_table)
 
         odds_table = soup.find('table', id='odds')
         trend_url_dict = resolve_odds_table(odds_table)
+        zf_trend = []
+        rf_trend = []
         for co, trend_url in trend_url_dict.items():
-            game_data["trend"][co] = get_trend(trend_url)
+            zf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["ZF"])])
+            rf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["RF"])])
+
+        game_dict = {
+            "NBAInfo": [game_id, _date, _weekday, _time, _home, _guest, *_score_list],
+            "ZFInfo": zf_trend,
+            "RFInfo": rf_trend
+        }
     else:
         print(f"请求失败，状态码：{response.status_code}")
+        game_dict = {}
 
-    return game_data
+    return game_dict

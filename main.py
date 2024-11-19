@@ -7,18 +7,24 @@ import pyodbc
 with open("config.yaml", "r", encoding="utf-8") as f:
     _config = yaml.load(f, Loader=yaml.FullLoader)
 
+# 根据日期筛选比赛id列表
+id_dict = get_id(_config['year'], _config['month'], _config['season'])
+if isinstance(_config['date'], list):
+    id_list = [key for key, val in id_dict.items() if val in _config['date']]
+elif _config['date'] == 'all':
+    id_list = list(id_dict.keys())
+else:
+    id_list = []
 
-conn_str = f'DRIVER={{SQL Server}};SERVER={_config["Server"]};DATABASE={_config["Database"]};UID={_config["UID"]};PWD={_config["PWD"]}'
+# 连接数据库
+conn_str = 'DRIVER={SQL Server};SERVER={%s};DATABASE={%s};UID={%s};PWD={%s}' % (_config["Server"], _config["Database"], _config["UID"], _config["PWD"])
 conn = pyodbc.connect(conn_str)
 cursor = conn.cursor()
 
-id_list = get_id(2024, 10, "2024-2025")
-
-
+# 循环爬取每场比赛数据存入数据库
 print("total: %d" % len(id_list))
 for i, item in enumerate(id_list):
     print("%d: %s" % (i+1, item))
-
     _json = get_data(int(item))
 
     insert_main = '''insert into dbo.NBAInfo (NBAID, rq, xq, sj, zd, kd, z1, z2, z3, z4, zj, k1, k2, k3, k4, kj) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''

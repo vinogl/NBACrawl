@@ -21,7 +21,6 @@ def get_soup(url):
 
 def get_trend(trend_route: str) -> list:
     url = 'https://nba.titan007.com%s' % trend_route
-
     soup = get_soup(url)
 
     trend_table = soup.find('span', id='odds2').find('table')

@@ -40,9 +40,7 @@ def resolve_odds_table(soup_table) -> dict:
 
 
 def get_data(game_id: int) -> dict:
-
     url = 'https://nba.titan007.com/odds/OverDown_n.aspx?id=%d&l=0' % game_id
-
     soup = get_soup(url)
 
     _home = soup.find('div', class_='home').find('img')['alt']

@@ -1,3 +1,5 @@
+import sys
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -14,15 +16,13 @@ def get_soup(url):
         return soup
     else:
         print(f"请求失败，状态码：{response.status_code}")
-        return None
+        sys.exit()
 
 
 def get_trend(trend_route: str) -> list:
     url = 'https://nba.titan007.com%s' % trend_route
 
     soup = get_soup(url)
-    if soup is None:
-        return []
 
     trend_table = soup.find('span', id='odds2').find('table')
 

@@ -44,8 +44,6 @@ def get_data(game_id: int) -> dict:
     url = 'https://nba.titan007.com/odds/OverDown_n.aspx?id=%d&l=0' % game_id
 
     soup = get_soup(url)
-    if soup is None:
-        return {}
 
     _home = soup.find('div', class_='home').find('img')['alt']
     _guest = soup.find('div', class_='guest').find('img')['alt']

@@ -24,7 +24,7 @@ cursor = conn.cursor()
 # 循环爬取每场比赛数据存入数据库
 print("total: %d" % len(id_list))
 for i, item in enumerate(id_list):
-    print("%d: %s" % (i+1, item))
+    print("%d: %s (%d-%d-%d)" % (i+1, item, _config['year'], _config['month'], id_dict[item]))
     _json = get_data(int(item))
 
     insert_main = '''insert into dbo.NBAInfo (NBAID, rq, xq, sj, zd, kd, z1, z2, z3, z4, zj, k1, k2, k3, k4, kj) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''

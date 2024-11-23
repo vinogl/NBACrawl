@@ -1,3 +1,4 @@
+from datetime import datetime
 from GetTrend import get_soup, get_trend
 
 
@@ -58,9 +59,10 @@ def get_data(game_id: int) -> dict:
     trend_url_dict = resolve_odds_table(odds_table)
     zf_trend = []
     rf_trend = []
+    game_time = datetime.strptime("%s %s" % (_date, _time), "%Y-%m-%d %H:%M")
     for co, trend_url in trend_url_dict.items():
-        zf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["ZF"])])
-        rf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["RF"])])
+        zf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["ZF"], game_time)])
+        rf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["RF"], game_time)])
 
     game_dict = {
         "NBAInfo": [game_id, _date, _weekday, _time, _home, _guest, *_score_list],

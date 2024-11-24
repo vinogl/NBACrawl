@@ -19,7 +19,7 @@ def get_soup(url):
         sys.exit()
 
 
-def get_trend(trend_route: str, game_time: datetime) -> list:
+def get_trend(trend_route: str, game_time: datetime, game_id: int, co: str) -> list:
     url = 'https://nba.titan007.com%s' % trend_route
     soup = get_soup(url)
 
@@ -45,6 +45,8 @@ def get_trend(trend_route: str, game_time: datetime) -> list:
             row_data.pop()
             row_data.append(row_time.strftime("%Y-%m-%d"))
             row_data.append(row_time.strftime("%H:%M"))
+            row_data.insert(0, co)
+            row_data.insert(0, game_id)
             trend_list.append(row_data)
 
     return trend_list

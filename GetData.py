@@ -61,8 +61,8 @@ def get_data(game_id: int) -> dict:
     rf_trend = []
     game_time = datetime.strptime("%s %s" % (_date, _time), "%Y-%m-%d %H:%M")
     for co, trend_url in trend_url_dict.items():
-        zf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["ZF"], game_time)])
-        rf_trend.extend([[game_id, co, *item] for item in get_trend(trend_url["RF"], game_time)])
+        zf_trend.extend(get_trend(trend_url["ZF"], game_time, game_id, co))
+        rf_trend.extend(get_trend(trend_url["RF"], game_time, game_id, co))
 
     game_dict = {
         "NBAInfo": [game_id, _date, _weekday, _time, _home, _guest, *_score_list],

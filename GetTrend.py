@@ -43,8 +43,8 @@ def get_trend(trend_route: str, game_time: datetime, game_id: int, co: str) -> l
 
         if row_time < game_time:
             row_data.pop()
-            row_data.append(row_time.strftime("%Y-%m-%d"))
-            row_data.append(row_time.strftime("%H:%M"))
+            row_data.insert(0, row_time.strftime("%H:%M"))
+            row_data.insert(0, row_time.strftime("%Y-%m-%d"))
             row_data.insert(0, co)
             row_data.insert(0, game_id)
             trend_list.append(row_data)

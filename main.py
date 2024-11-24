@@ -17,7 +17,7 @@ else:
     id_list = []
 
 # 连接数据库
-conn_str = 'DRIVER={SQL Server};SERVER={%s};DATABASE={%s};UID={%s};PWD={%s}' % (_config["Server"], _config["Database"], _config["UID"], _config["PWD"])
+conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER={%s};DATABASE={%s};UID={%s};PWD={%s}' % (_config["Server"], _config["Database"], _config["UID"], _config["PWD"])
 conn = pyodbc.connect(conn_str)
 cursor = conn.cursor()
 
@@ -28,8 +28,8 @@ for i, item in enumerate(id_list):
     _json = get_data(int(item))
 
     insert_main = '''insert into dbo.NBAInfo (NBAID, rq, xq, sj, zd, kd, z1, z2, z3, z4, zj, k1, k2, k3, k4, kj) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-    insert_zf = '''insert into dbo.ZFInfo (NBAID, gs, df, pk, xf, rq, sj) values (?, ?, ?, ?, ?, ?, ?)'''
-    insert_rf = '''insert into dbo.RFInfo (NBAID, gs, zp, pk, kp, rq, sj) values (?, ?, ?, ?, ?, ?, ?)'''
+    insert_zf = '''insert into dbo.ZFInfo (NBAID, gs, rq, sj, df, pk, xf) values (?, ?, ?, ?, ?, ?, ?)'''
+    insert_rf = '''insert into dbo.RFInfo (NBAID, gs, rq, sj, zp, pk, kp) values (?, ?, ?, ?, ?, ?, ?)'''
 
     try:
         cursor.execute(insert_main, _json["NBAInfo"])

@@ -19,6 +19,8 @@ def get_id(year: int, month: int, season: str) -> dict:
 
     id_dict = {}  # 创建一个字典来存储比赛id与比赛日期的映射
     for row in table.find_all('tr'):
+        if row.find('td', string='推迟'):
+            continue
 
         a_tag = row.find('a', string='[欧]')  # 找到该行中的<a>标签
 
